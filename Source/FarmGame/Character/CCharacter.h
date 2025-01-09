@@ -27,6 +27,12 @@ private:
 	void MoveForward(float Axis);
 	void MoveRight(float Axis);
 
+	void OnTurn(float Axis);
+	
+
+private:
+	
+
 
 protected:
 
@@ -34,6 +40,6 @@ protected:
 	USpringArmComponent* SpringArmComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
-	UCameraComponent* cameraComp;
+	UCameraComponent* CameraComp;
 
 };
