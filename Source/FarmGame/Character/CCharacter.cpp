@@ -30,14 +30,14 @@ ACCharacter::ACCharacter()
 	SpringArmComp->SetRelativeLocation(FVector(0, 0, 100));
 	SpringArmComp->SetRelativeRotation(FRotator(-88, 0, 0));
 	SpringArmComp->TargetArmLength = 800.f;
-	SpringArmComp->bUsePawnControlRotation = false;
-	SpringArmComp->SocketOffset = FVector(0, 60, 0);
+	SpringArmComp->bUsePawnControlRotation = true;
+	SpringArmComp->SocketOffset = FVector(0, 60, 700);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp -> SetupAttachment(SpringArmComp);
 
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
 
 }
 
