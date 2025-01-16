@@ -24,10 +24,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
+private:
+	void ChangeMeshState();
+
 
 private:
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* MeshComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UPROPERTY()
+	TArray<UStaticMesh*> MeshAssets;
+
+private:
+	int32 CurrentStateIndex;
+	FTimerHandle ChangeMeshTimerHandle;
 };

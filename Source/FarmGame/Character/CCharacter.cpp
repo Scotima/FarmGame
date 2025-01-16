@@ -49,7 +49,7 @@ void ACCharacter::BeginPlay()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (PlayerController)
 	{
-		PlayerController->bShowMouseCursor = false;
+		PlayerController->bShowMouseCursor = true;
 		//PlayerController->bEnableMouseOverEvents = true;
 	}
 
