@@ -3,6 +3,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"	
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Tools/CRake.h"
 
 ACCharacter::ACCharacter()
 {
@@ -21,6 +22,13 @@ ACCharacter::ACCharacter()
 	if (AnimInstanceClass.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClass.Class);
+	}
+
+	ConstructorHelpers::FClassFinder<ACRake> ToolClass(TEXT("/Game/FarmTools/BP_CRake"));
+
+	if (ToolClass.Succeeded())
+	{
+		RakeClass = ToolClass.Class;
 	}
 
 
@@ -49,8 +57,16 @@ void ACCharacter::BeginPlay()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (PlayerController)
 	{
-		PlayerController->bShowMouseCursor = true;
+		PlayerController->bShowMouseCursor = false;
 		//PlayerController->bEnableMouseOverEvents = true;
+	}
+
+	if (RakeClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		Rake = GetWorld()->SpawnActor<ACRake>(RakeClass, SpawnParams);
+
 	}
 
 
