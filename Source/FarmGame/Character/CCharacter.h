@@ -29,10 +29,12 @@ private:
 	void MoveRight(float Axis);
 
 	void OnTurn(float Axis);
+
+	void MouseLeft();
 	
 
 private:
-	
+	void Plowing();
 
 
 protected:

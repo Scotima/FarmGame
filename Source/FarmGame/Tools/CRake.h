@@ -24,6 +24,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
+public:
+	void Plowing();
+	void SweepSingleByChannel();
+
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* RakeMesh;

@@ -84,10 +84,11 @@ void ACCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ACCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ACCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("MoveForward", this, &ACCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ACCharacter::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &ACCharacter::OnTurn);
+	PlayerInputComponent->BindAction("MouseLeft", IE_Pressed, this, &ACCharacter::MouseLeft);
 	
 }
 
@@ -110,6 +111,14 @@ void ACCharacter::MoveRight(float Axis)
 void ACCharacter::OnTurn(float Axis)
 {
 	AddControllerYawInput(Axis);
+}
+
+void ACCharacter::MouseLeft()
+{
+	if (Rake)
+	{
+		Rake->Plowing();
+	}
 }
 
 

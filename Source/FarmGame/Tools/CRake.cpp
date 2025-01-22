@@ -1,6 +1,8 @@
 #include "Tools/CRake.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "DrawDebugHelpers.h"
 
 ACRake::ACRake()
 {
@@ -41,13 +43,43 @@ void ACRake::BeginPlay()
 		RakeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		// 상대 위치 설정
-		RakeMesh->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+		RakeMesh->SetRelativeLocation(FVector(0.f, 0.f, -50.f));
+		RakeMesh->SetRelativeRotation(FRotator(0.f, -187.f, 0.f));
 	}
 }
 
 void ACRake::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+}
+
+void ACRake::Plowing()
+{
+	OwnerCharacter->PlayAnimMontage(WorkHoeMontage);
+	SweepSingleByChannel();
+	
+}
+
+void ACRake::SweepSingleByChannel()
+{
+	FVector Start = RakeMesh->GetComponentLocation();
+	FVector ForwardVector = RakeMesh->GetComponentTransform().TransformVector(FVector::ForwardVector);
+	FVector End = Start + ForwardVector * 100;
+	float SphereRadius = 100.f;
+
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	bool bHit = UKismetSystemLibrary::SphereTraceSingle(
+		GetWorld(), Start,End, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+		EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+
+	if (bHit)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *HitResult.GetActor()->GetName());
+	}
 
 }
 
