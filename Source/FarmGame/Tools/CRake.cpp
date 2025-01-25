@@ -2,7 +2,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "Actor/Grow.h"
 
 ACRake::ACRake()
 {
@@ -59,27 +61,54 @@ void ACRake::Plowing()
 	OwnerCharacter->PlayAnimMontage(WorkHoeMontage);
 	SweepSingleByChannel();
 	
+	
 }
 
 void ACRake::SweepSingleByChannel()
 {
-	FVector Start = RakeMesh->GetComponentLocation();
-	FVector ForwardVector = RakeMesh->GetComponentTransform().TransformVector(FVector::ForwardVector);
-	FVector End = Start + ForwardVector * 100;
+	FVector Start = OwnerCharacter->GetActorLocation();
+	FRotator ActorRotation = OwnerCharacter->GetActorRotation();
+	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(ActorRotation);
+	double Multiplier = 100.f;
+
+	FVector MultipliedVector = ForwardVector * Multiplier;
+	FVector End = Start + MultipliedVector;
 	float SphereRadius = 100.f;
 
 	FHitResult HitResult;
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
 
+	
+
 	bool bHit = UKismetSystemLibrary::SphereTraceSingle(
-		GetWorld(), Start,End, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+		GetWorld(), End,End, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_EngineTraceChannel1), false, ActorsToIgnore,
 		EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 
 	if (bHit)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *HitResult.GetActor()->GetName());
+		
 	}
+
+	if (bHit && HitResult.GetActor())
+	{
+		FVector HitActorLocatioin = HitResult.ImpactPoint;
+		FRotator SpawnRotation = FRotator::ZeroRotator;
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		AGrow* SpawnGrow = GetWorld()->SpawnActor<AGrow>(AGrow::StaticClass(), HitActorLocatioin, SpawnRotation, SpawnParams);
+		SpawnGrow->SetActorScale3D(FVector(0.5f, 0.5f, 0.5f));
+
+		UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitResult.GetActor()->GetName());
+		UE_LOG(LogTemp, Log, TEXT("Collision Response to Soil: %d"), HitResult.GetComponent()->GetCollisionResponseToChannel(ECC_GameTraceChannel1));
+
+	}
+
+	
 
 }
 
