@@ -7,6 +7,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class ACRake;
+class UUserWidget;
 
 UCLASS()
 class FARMGAME_API ACCharacter : public ACharacter
@@ -35,6 +36,7 @@ private:
 
 private:
 	void Plowing();
+	void SetCustomMouseCursor();
 
 
 protected:
@@ -49,6 +51,9 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Tools")
 	TSubclassOf<ACRake> RakeClass;
+
+	UPROPERTY()
+	TSubclassOf<UUserWidget> CursorClass;
 
 private:
 	ACRake* Rake;

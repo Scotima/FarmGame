@@ -4,6 +4,8 @@
 #include "Camera/CameraComponent.h"	
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Tools/CRake.h"
+#include "Blueprint/UserWidget.h"
+#include "GameFramework/PlayerController.h"
 
 ACCharacter::ACCharacter()
 {
@@ -30,6 +32,11 @@ ACCharacter::ACCharacter()
 	{
 		RakeClass = ToolClass.Class;
 	}
+	static ConstructorHelpers::FClassFinder<UUserWidget> CursorAsset(TEXT("/Game/UI/WG_MouseCursor"));
+	if (CursorAsset.Succeeded())
+	{
+		CursorClass = CursorAsset.Class;
+	}
 
 
 
@@ -54,12 +61,7 @@ void ACCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	// 플레이 했을때 마우스 커서 보이게 하기.
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (PlayerController)
-	{
-		PlayerController->bShowMouseCursor = false;
-		//PlayerController->bEnableMouseOverEvents = true;
-	}
+	SetCustomMouseCursor();
 
 	if (RakeClass)
 	{
@@ -119,6 +121,37 @@ void ACCharacter::MouseLeft()
 	{
 		Rake->Plowing();
 	}
+}
+
+void ACCharacter::SetCustomMouseCursor()
+{
+	// 플레이 했을때 마우스 커서 보이게 하기.
+	APlayerController* PlayerController = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+
+	if (!PlayerController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerController is nullptr"));
+		return;
+	}
+
+	if (CursorClass)
+	{
+		UUserWidget* CursorWidget = CreateWidget<UUserWidget>(GetWorld(), CursorClass);
+		if (CursorWidget)
+		{
+			PlayerController->SetMouseCursorWidget(EMouseCursor::Default, CursorWidget);
+			PlayerController->bShowMouseCursor = true;
+
+			UE_LOG(LogTemp, Log, TEXT("Custom mouse cursor set."));
+		}
+
+	}
+
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Custom Cursor WidgetAsset is null"));
+	}
+	
 }
 
 
