@@ -6,6 +6,7 @@
 #include "Tools/CRake.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
+#include "Actor/Grow.h"
 
 ACCharacter::ACCharacter()
 {
@@ -38,6 +39,20 @@ ACCharacter::ACCharacter()
 		CursorClass = CursorAsset.Class;
 	}
 
+	//스킬창 위젯 로드
+	static ConstructorHelpers::FClassFinder<UUserWidget> SkillWindowAsset(TEXT("/Game/UI/WG_SkillWindow"));
+	if (SkillWindowAsset.Succeeded())
+	{
+		SkillWindowClass = SkillWindowAsset.Class;
+	}
+
+	// 농작물 로드
+	static ConstructorHelpers::FClassFinder<AGrow> GrowAsset(TEXT("/Game/FarmCrops/BP_Crops"));
+
+	if (GrowAsset.Succeeded())
+	{
+		GrowClass = GrowAsset.Class;
+	}
 
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
@@ -71,6 +86,11 @@ void ACCharacter::BeginPlay()
 
 	}
 
+	if (SkillWindowClass)
+	{
+		SkillWindowWidget = CreateWidget<UUserWidget>(GetWorld(), SkillWindowClass);
+	}
+
 
 	
 }
@@ -78,7 +98,7 @@ void ACCharacter::BeginPlay()
 void ACCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	UpdateFarmPreview();
 	
 }
 
@@ -91,6 +111,8 @@ void ACCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAxis("Turn", this, &ACCharacter::OnTurn);
 	PlayerInputComponent->BindAction("MouseLeft", IE_Pressed, this, &ACCharacter::MouseLeft);
+
+	PlayerInputComponent->BindAction("SkillWindow", IE_Pressed, this, &ACCharacter::OpenSKillWindow);
 	
 }
 
@@ -117,10 +139,12 @@ void ACCharacter::OnTurn(float Axis)
 
 void ACCharacter::MouseLeft()
 {
-	if (Rake)
+	if (Rake && plowing)
 	{
 		Rake->Plowing();
 	}
+	PlaceFarm();
+	
 }
 
 void ACCharacter::SetCustomMouseCursor()
@@ -152,6 +176,75 @@ void ACCharacter::SetCustomMouseCursor()
 		UE_LOG(LogTemp, Warning, TEXT("Custom Cursor WidgetAsset is null"));
 	}
 	
+}
+
+void ACCharacter::OpenSKillWindow()
+{
+	if (SkillWindowWidget)
+	{
+		bool IsVisible = SkillWindowWidget->IsInViewport();
+		if (IsVisible)
+		{
+			SkillWindowWidget->RemoveFromViewport();
+			plowing = true;
+		}
+
+		else
+		{
+			SkillWindowWidget->AddToViewport();
+			plowing = false;
+		}
+	}
+}
+
+void ACCharacter::OnFarmIconClicked()
+{
+	if (!PreviewFarmActor && GrowClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		PreviewFarmActor = GetWorld()->SpawnActor<AGrow>(GrowClass, SpawnParams);
+
+		if (PreviewFarmActor)
+		{
+			PreviewFarmActor->SetActorEnableCollision(false);
+		}
+	}
+}
+
+void ACCharacter::PlaceFarm()
+{
+	if (PreviewFarmActor)
+	{
+		FTransform FarmTransform = PreviewFarmActor->GetActorTransform();
+		AGrow* PlacedFarm = GetWorld()->SpawnActor<AGrow>(GrowClass, FarmTransform);
+
+		if (PlacedFarm)
+		{
+			UE_LOG(LogTemp, Log, TEXT("FarmPlaced"));
+		}
+
+		PreviewFarmActor->Destroy();
+		PreviewFarmActor = nullptr;
+	}
+}
+
+void ACCharacter::UpdateFarmPreview()
+{
+
+	if (PreviewFarmActor)
+	{
+		FVector WorldLocation, WorldDirection;
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+		if (PlayerController && PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+		{
+			FVector TargetLocation = WorldLocation + WorldDirection * 1000.f;
+			TargetLocation.Z = 0;
+			PreviewFarmActor->SetActorLocation(TargetLocation);
+
+		}
+	}
 }
 
 

@@ -8,6 +8,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class ACRake;
 class UUserWidget;
+class AGrow;
 
 UCLASS()
 class FARMGAME_API ACCharacter : public ACharacter
@@ -35,10 +36,19 @@ private:
 	
 
 private:
-	void Plowing();
 	void SetCustomMouseCursor();
 
+	void OpenSKillWindow();
 
+	
+	void PlaceFarm();
+
+	void UpdateFarmPreview();
+
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Farm")
+	void OnFarmIconClicked();
 protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
@@ -55,7 +65,23 @@ private:
 	UPROPERTY()
 	TSubclassOf<UUserWidget> CursorClass;
 
+	// 스킬 창 열기
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> SkillWindowClass;
+
+	UPROPERTY()
+	UUserWidget* SkillWindowWidget;
+
+	// 농작물 
+	UPROPERTY(EditDefaultsOnly, Category = "Farm")
+	TSubclassOf<AGrow> GrowClass;
+
+	UPROPERTY()
+	AGrow* PreviewFarmActor;
+
 private:
 	ACRake* Rake;
+
+	bool plowing = true;
 
 };
